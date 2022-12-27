@@ -7,34 +7,34 @@ namespace VectorRegression;
 public class SymptomDescription
 {
     // The actual values contained in 'data' are irrelevant.
-    private static readonly Double[] data = new Double[Vector<Double>.Count];
+    private static readonly Double[] heapAllocatedData = new Double[Vector<Double>.Count];
 
     [Benchmark(Baseline = true)]
     public Double ExpectedUpperBound()
     {
-        var vector = new Vector<Double>(data);
-        return Vector.Sum(vector);
+        var vectorFromHeapData = new Vector<Double>(heapAllocatedData);
+        return Vector.Sum(vectorFromHeapData);
     }
 
     [Benchmark] // Linux: ratio=7.07
     public Double ActualRuntime()
     {
         // The ratio should be approximately 1.88, but it's 7.07, approx 3.8 times slower than expected!
-        Span<Double> localData = stackalloc Double[Vector<Double>.Count];
-        var vector = new Vector<Double>(localData);
-        return Vector.Sum(vector);
+        Span<Double> stackData = stackalloc Double[Vector<Double>.Count];
+        var vectorFromStackData = new Vector<Double>(stackData);
+        return Vector.Sum(vectorFromStackData);
     }
 
     [Benchmark] // Linux: ratio=0.88
     public Double CostOfStackAllocation()
     {
         // The actual runtime above should be no longer than expected plus the duration of this benchmark.
-        Span<Double> localData = stackalloc Double[Vector<Double>.Count];
-        return localData.Length;
+        Span<Double> stackData = stackalloc Double[Vector<Double>.Count];
+        return stackData.Length;
     }
 }
 
-/*** Linux ***
+/*** Linux | Vector<Double>.Count = 4 ***
 // * Summary *
 
 BenchmarkDotNet=v0.13.3, OS=arch 
